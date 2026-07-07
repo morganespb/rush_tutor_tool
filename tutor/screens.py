@@ -40,29 +40,49 @@ def argc_argv_screen() -> None:
 
     console.print(
         Panel(
-            "[bold cyan]argc[/bold cyan] = Number of arguments / Nombre d'arguments\n\n"
-            "[bold cyan]argv[/bold cyan] = Array of strings / Tableau de chaines de caracteres\n\n"
-            "Example:\n\n"
-            "    ./rush hello world",
-            title="Lesson 1 • argc / argv",
+            "[bold cyan]argc[/bold cyan] = Number of arguments passed to the program.\n"
+            "[bold cyan]argv[/bold cyan] = Array of strings (char **).",
+            title="argc / argv",
             border_style="green",
         )
     )
+
     console.print(argv_table("./rush hello world"))
+
+    console.print(
+        Panel(
+            """
+    Visual representation
+
+    argv
+     │
+     ▼
+
+    argv[0] ─────► "./rush"
+
+    argv[1] ─────► "hello"
+
+    argv[2] ─────► "world"
+
+    argv[3] ─────► NULL
+
+
+    Remember:
+
+    ✓ argc counts ALL arguments.
+
+    ✓ argv[0] is ALWAYS the program name.
+
+    ✓ argv[1] is the first user argument.
+
+    ✓ argv[argc] is ALWAYS NULL.
+    """,
+                title="Memory visualization",
+                border_style="yellow",
+            )
+        )
+
     wait()
-
-def memory_screen() -> None:
-    console.clear()
-
-    reveal("[bold yellow]Memory idea[/bold yellow]\n", delay=1)
-    reveal("A variable stores a value.", delay=0.5)
-    reveal("A pointer stores an address.", delay=0.5)
-    reveal("The * operator follows that address.\n", delay=0.5)
-
-    console.print(memory_panel())
-
-    wait()
-
 def fd_screen() -> None:
     console.clear()
     console.print(fd_panel())
@@ -81,4 +101,9 @@ def redirections_screen() -> None:
 def common_mistakes_screen() -> None:
     console.clear()
     console.print(common_mistakes_panel())
+    wait()
+
+def memory_screen() -> None:
+    console.clear()
+    console.print(memory_panel())
     wait()

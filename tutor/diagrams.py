@@ -6,31 +6,37 @@ from rich.align import Align
 
 def argv_table(command: str) -> Table:
     """
-    Create a table showing argc and argv.
+    Build a Rich table representing argc and argv.
     """
 
     argv = command.split()
     argc = len(argv)
 
     table = Table(
-        title=f"argc = {argc}",
+        title=f"Command: {command}",
         border_style="cyan",
         show_lines=True,
+        expand=True,
     )
 
-    table.add_column("Index", style="bold cyan", justify="center")
+    table.add_column("Index", justify="center", style="bold cyan")
     table.add_column("Value", style="yellow")
+    table.add_column("Type", justify="center", style="green")
 
     for i, arg in enumerate(argv):
-        table.add_row(f"argv[{i}]", f'"{arg}"')
+        table.add_row(
+            f"argv[{i}]",
+            f'"{arg}"',
+            "char *"
+        )
 
     table.add_row(
         f"argv[{argc}]",
-        "[bold red]NULL[/bold red]"
+        "[bold red]NULL[/bold red]",
+        "End"
     )
 
     return table
-
 
 def argv_tree(command: str) -> Tree:
     """
