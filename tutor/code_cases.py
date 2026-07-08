@@ -8,7 +8,7 @@ console = Console()
 
 CASES = [
     {
-        "title": "Accessing argv[1] without checking argc",
+        "title": "Printing arguments",
         "code": """
 #include <stdio.h>
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
         ),
     },
     {
-        "title": "Wrong write count",
+        "title": "Are you using write() properly?",
         "code": """
 #include <unistd.h>
 
@@ -43,7 +43,7 @@ int main(void)
         ),
     },
     {
-        "title": "Using sizeof on a pointer",
+        "title": "Are you sure about the count?",
         "code": """
 #include <unistd.h>
 
@@ -60,9 +60,9 @@ void print(char *str)
     },
 ]
 
-
 def code_cases_screen() -> None:
     index = 0
+    show_solution = False
 
     while True:
         case = CASES[index]
@@ -80,24 +80,40 @@ def code_cases_screen() -> None:
         syntax = Syntax(case["code"].strip(), "c", theme="monokai", line_numbers=True)
         console.print(syntax)
 
-        console.print(
-            Panel(
-                case["problem"],
-                title="What breaks?",
-                border_style="red",
+        if show_solution:
+            console.print(
+                Panel(
+                    case["problem"],
+                    title="What breaks?",
+                    border_style="red",
+                )
             )
-        )
+        #else:
+        #    console.print(
+        #        Panel(
+        #            "[bold cyan]Ask the student first:[/bold cyan]\n\n"
+        #            "What happens?\n"
+        #            "Why?\n"
+        #            "How would you fix it?",
+        #            title="Think first",
+        #            border_style="cyan",
+        #        )
+        #    )
 
         choice = Prompt.ask(
-            "\n[n] next  [b] back  [q] menu",
-            choices=["n", "b", "q"],
-            default="n",
+            "\n[s] show solution  [n] next  [b] back  [q] menu",
+            choices=["s", "n", "b", "q"],
+            default="s",
         )
 
-        if choice == "n":
+        if choice == "s":
+            show_solution = True
+        elif choice == "n":
             index = (index + 1) % len(CASES)
+            show_solution = False
         elif choice == "b":
             index = (index - 1) % len(CASES)
+            show_solution = False
         elif choice == "q":
             break
 

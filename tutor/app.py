@@ -1,11 +1,13 @@
 from rich.console import Console
 from rich.prompt import Prompt
 from tutor.simulator import simulator_screen
-from tutor.screens import home_screen, argc_argv_screen, memory_screen, fd_screen, write_screen, redirections_screen, common_mistakes_screen
+from tutor.screens import home_screen, argc_argv_screen, memory_screen, fd_screen, write_screen, redirections_screen, common_mistakes_screen, goodbye_screen
 from tutor.code_cases import code_cases_screen
+from tutor.memory_simulator import memory_simulator_screen
+from tutor.argv_playground import argv_playground_screen
+
 
 console = Console()
-
 
 def clear() -> None:
     console.clear()
@@ -48,14 +50,9 @@ def placeholder(title: str) -> None:
     )
     pause()
 
-
-def run():
+def run() -> None:
     while True:
-        home_screen()
-        choice = Prompt.ask(
-            "\nChoose a lesson",
-            choices=["1", "2", "3", "4", "5", "6", "7", "8", "q"],
-        )
+        choice = home_screen()
 
         if choice == "1":
             argc_argv_screen()
@@ -68,12 +65,15 @@ def run():
         elif choice == "5":
             redirections_screen()
         elif choice == "6":
-            common_mistakes_screen()    
+            common_mistakes_screen()
         elif choice == "7":
             simulator_screen()
         elif choice == "8":
             code_cases_screen()
+        elif choice == "9":
+            memory_simulator_screen()
+        elif choice == "10":
+            argv_playground_screen()
         elif choice == "q":
-            console.clear()
-            console.print("[bold green]Goodbye![/bold green]")
+            goodbye_screen()
             break
