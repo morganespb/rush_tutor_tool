@@ -1,4 +1,3 @@
-from rich.console import Console
 from rich.prompt import Prompt
 from tutor.simulator import simulator_screen
 from tutor.screens import home_screen, argc_argv_screen, memory_screen, fd_screen, write_screen, redirections_screen, common_mistakes_screen, goodbye_screen
@@ -7,7 +6,8 @@ from tutor.memory_simulator import memory_simulator_screen
 from tutor.argv_playground import argv_playground_screen
 
 
-console = Console()
+from tutor import screens, utils
+from tutor.utils import console
 
 def clear() -> None:
     console.clear()
@@ -50,30 +50,38 @@ def placeholder(title: str) -> None:
     )
     pause()
 
-def run() -> None:
-    while True:
-        choice = home_screen()
+SCREENS = {
+    "1": argc_argv_screen,
+    "2": memory_screen,
+    "3": fd_screen,
+    "4": write_screen,
+    "5": redirections_screen,
+    "6": common_mistakes_screen,
+    "7": simulator_screen,
+    "8": code_cases_screen,
+    "9": memory_simulator_screen,
+    "10": argv_playground_screen,
+}
+ORDER = list(SCREENS)
 
-        if choice == "1":
-            argc_argv_screen()
-        elif choice == "2":
-            memory_screen()
-        elif choice == "3":
-            fd_screen()
-        elif choice == "4":
-            write_screen()
-        elif choice == "5":
-            redirections_screen()
-        elif choice == "6":
-            common_mistakes_screen()
-        elif choice == "7":
-            simulator_screen()
-        elif choice == "8":
-            code_cases_screen()
-        elif choice == "9":
-            memory_simulator_screen()
-        elif choice == "10":
-            argv_playground_screen()
-        elif choice == "q":
+
+def run() -> None:
+    # Full-screen mode: the terminal is restored as it was when you quit.
+    with console.screen():
+        try:
+            choice = home_screen()
+            while choice != "q":
+                utils.last_key = None
+                SCREENS[choice]()
+
+                # ← / → after a lesson flips to the previous / next one, like slides.
+                step = {"left": -1, "right": 1}.get(utils.last_key)
+                if step:
+                    choice = ORDER[(ORDER.index(choice) + step) % len(ORDER)]
+                    screens.selected = ORDER.index(choice)
+                else:
+                    choice = home_screen()
+
             goodbye_screen()
-            break
+        except (KeyboardInterrupt, EOFError):
+            pass

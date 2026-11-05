@@ -1,10 +1,9 @@
-from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
 from rich.syntax import Syntax
-from tutor.utils import wait
+from tutor.utils import getkey
+from tutor.animations import show
 
-console = Console()
+from tutor.utils import console
 
 CASES = [
     {
@@ -63,25 +62,22 @@ void print(char *str)
 def code_cases_screen() -> None:
     index = 0
     show_solution = False
+    animate = True
 
     while True:
         case = CASES[index]
-        console.clear()
-
-        console.print(
+        frame = [
             Panel(
                 f"[bold yellow]{case['title']}[/bold yellow]\n\n"
                 f"[cyan]Run:[/cyan] {case['run']}",
                 title=f"Break This Code {index + 1}/{len(CASES)}",
                 border_style="yellow",
-            )
-        )
-
-        syntax = Syntax(case["code"].strip(), "c", theme="monokai", line_numbers=True)
-        console.print(syntax)
+            ),
+            Syntax(case["code"].strip(), "c", theme="monokai", line_numbers=True, padding=1),
+        ]
 
         if show_solution:
-            console.print(
+            frame.append(
                 Panel(
                     case["problem"],
                     title="What breaks?",
@@ -100,21 +96,25 @@ def code_cases_screen() -> None:
         #        )
         #    )
 
-        choice = Prompt.ask(
-            "\n[s] show solution  [n] next  [b] back  [q] menu",
-            choices=["s", "n", "b", "q"],
-            default="s",
+        frame.append(
+            "\n[dim][bold cyan]space[/bold cyan] show solution   "
+            "[bold cyan]←  →[/bold cyan] previous / next case   "
+            "[bold cyan]q[/bold cyan] menu[/dim]"
         )
+        show(*frame, animate=animate)
+        animate = False
 
-        if choice == "s":
+        choice = getkey()
+
+        if choice in ("s", "space", "enter", "down"):
             show_solution = True
-        elif choice == "n":
+        elif choice in ("n", "right"):
             index = (index + 1) % len(CASES)
             show_solution = False
-        elif choice == "b":
+            animate = True
+        elif choice in ("b", "left"):
             index = (index - 1) % len(CASES)
             show_solution = False
-        elif choice == "q":
+            animate = True
+        elif choice in ("q", "esc"):
             break
-
-    wait()

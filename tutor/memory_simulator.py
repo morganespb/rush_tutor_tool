@@ -1,16 +1,21 @@
-from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import IntPrompt
 from tutor.utils import wait
+from tutor.animations import show
 
-console = Console()
+from tutor import utils
+from tutor.utils import console
 
 ADDRESS_A = "0x1000"
+STEP_HINT = (
+    "[bold cyan]←[/bold cyan] previous step   "
+    "[bold cyan]→ / space[/bold cyan] next step   "
+    "[bold cyan]q[/bold cyan] menu"
+)
 
 
 def step1(value: int) -> None:
-    console.clear()
-    console.print(
+    show(
         Panel(
             f"""
 🏠 STEP 1 — A variable stores a value
@@ -35,12 +40,11 @@ Meaning:
             border_style="cyan",
         )
     )
-    wait()
+    wait(STEP_HINT)
 
 
 def step2(value: int) -> None:
-    console.clear()
-    console.print(
+    show(
         Panel(
             f"""
 📍 STEP 2 — A variable has an address
@@ -70,12 +74,11 @@ Meaning:
             border_style="green",
         )
     )
-    wait()
+    wait(STEP_HINT)
 
 
 def step3(value: int) -> None:
-    console.clear()
-    console.print(
+    show(
         Panel(
             f"""
 📮 STEP 3 — A pointer stores an address
@@ -110,12 +113,11 @@ p stores the address of a.
             border_style="magenta",
         )
     )
-    wait()
+    wait(STEP_HINT)
 
 
 def step4(value: int) -> None:
-    console.clear()
-    console.print(
+    show(
         Panel(
             f"""
 ⭐ STEP 4 — Dereferencing with *
@@ -145,12 +147,11 @@ Result:
             border_style="yellow",
         )
     )
-    wait()
+    wait(STEP_HINT)
 
 
 def step5(value: int) -> None:
-    console.clear()
-    console.print(
+    show(
         Panel(
             f"""
 🎯 STEP 5 — Why pointers matter in C
@@ -193,7 +194,7 @@ Why C needs pointers:
             border_style="bright_blue",
         )
     )
-    wait()
+    wait(STEP_HINT)
 
 
 def memory_simulator_screen() -> None:
@@ -204,8 +205,11 @@ def memory_simulator_screen() -> None:
         default=42,
     )
 
-    step1(value)
-    step2(value)
-    step3(value)
-    step4(value)
-    step5(value)
+    steps = [step1, step2, step3, step4, step5]
+    i = 0
+    while i < len(steps):
+        steps[i](value)
+        key = utils.last_key
+        if key in ("q", "esc"):
+            break
+        i = max(i - 1, 0) if key == "left" else i + 1

@@ -1,12 +1,11 @@
 import shlex
 
-from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 
 from tutor.utils import wait
 
-console = Console()
+from tutor.utils import console
 
 
 def argv_playground_screen() -> None:

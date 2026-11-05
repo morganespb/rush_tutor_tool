@@ -1,11 +1,11 @@
-from rich.console import Console
 from rich.panel import Panel
-from tutor.utils import wait
+from rich.text import Text
+from tutor.utils import wait, getkey
 from tutor.diagrams import argv_table, fd_panel, memory_panel, write_panel, redirections_panel, common_mistakes_panel
-from tutor.animations import reveal
+from tutor.animations import reveal, show
 from rich.prompt import Prompt
 
-console = Console()
+from tutor.utils import console
 
 
 #def pause():
@@ -38,55 +38,77 @@ console = Console()
 #        )
 #    )
 
+MENU = [
+    ("1", "📦 argc / argv"),
+    ("2", "🏠 Memory & Pointers"),
+    ("3", "📮 File Descriptors"),
+    ("4", "✍️  write()"),
+    ("5", "🔀 Shell Redirections"),
+    ("6", "⚠️  Common Mistakes"),
+    ("7", "⚡ Live argc/argv Simulator"),
+    ("8", "💥 Break This Code"),
+    ("9", "🧠 Pointer Playground"),
+    ("10", "🧬 char **argv Playground"),
+]
+selected = 0
+
+
 def home_screen() -> str:
-    console.clear()
+    """Menu: ↑ ↓ + ENTER, or press the lesson number directly (0 = 10)."""
+    global selected
+    animate = True
 
-    console.print(
-        Panel(
-            """
-    [bold bright_cyan]🚀 42 RUSH00 TUTOR TOOL[/bold bright_cyan]
+    while True:
+        lines = []
+        for i, (key, label) in enumerate(MENU):
+            if i == selected:
+                lines.append(f"[black on bright_cyan] ▶ {key:<3} {label}  [/black on bright_cyan]")
+            else:
+                lines.append(f"   [bold cyan]{key:<3}[/bold cyan] {label}")
 
-    Interactive visual explanations for C basics.
-
-    [bold cyan]1[/bold cyan]   📦 argc / argv
-    [bold cyan]2[/bold cyan]   🏠 Memory & Pointers
-    [bold cyan]3[/bold cyan]   📮 File Descriptors
-    [bold cyan]4[/bold cyan]   ✍️  write()
-    [bold cyan]5[/bold cyan]   🔀 Shell Redirections
-    [bold cyan]6[/bold cyan]   ⚠️  Common Mistakes
-    [bold cyan]7[/bold cyan]   ⚡ Live argc/argv Simulator
-    [bold cyan]8[/bold cyan]   💥 Break This Code
-    [bold cyan]9[/bold cyan]   🧠 Pointer Playground
-    [bold cyan]10[/bold cyan]  🧬 char **argv Playground
-
-    [bold red]q[/bold red]   Quit
-    """,
-            title="42 Tutor Mode",
-            border_style="bright_cyan",
-            padding=(1, 4),
+        show(
+            Panel(
+                Text.from_markup(
+                    "\n[bold bright_cyan]🚀 42 RUSH00 TUTOR TOOL[/bold bright_cyan]\n\n"
+                    "Interactive visual explanations for C basics.\n\n"
+                    + "\n".join(lines)
+                    + "\n\n   [bold red]q[/bold red]   Quit\n"
+                ),
+                title="42 Tutor Mode",
+                border_style="bright_cyan",
+                padding=(1, 4),
+            ),
+            "[dim][bold cyan]↑ ↓[/bold cyan] move   [bold cyan]enter[/bold cyan] open   "
+            "[bold cyan]1-9, 0[/bold cyan] jump   [bold cyan]q[/bold cyan] quit[/dim]",
+            animate=animate,
         )
-    )
+        animate = False
 
-    return Prompt.ask(
-        "\n[bold green]Choose a lesson[/bold green]",
-        choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "q"],
-    )
+        key = getkey()
+        if key == "up":
+            selected = (selected - 1) % len(MENU)
+        elif key == "down":
+            selected = (selected + 1) % len(MENU)
+        elif key in ("enter", "space", "right"):
+            return MENU[selected][0]
+        elif key in ("q", "esc"):
+            return "q"
+        elif key == "0":
+            selected = 9
+            return "10"
+        elif key in [k for k, _ in MENU]:
+            selected = int(key) - 1
+            return key
 
 def argc_argv_screen() -> None:
-    console.clear()
-
-    console.print(
+    show(
         Panel(
             "[bold cyan]argc[/bold cyan] = Number of arguments passed to the program.\n"
             "[bold cyan]argv[/bold cyan] = Array of strings (char **).",
             title="argc / argv",
             border_style="green",
-        )
-    )
-
-    console.print(argv_table("./rush hello world"))
-
-    console.print(
+        ),
+        argv_table("./rush hello world"),
         Panel(
             """
     Visual representation
@@ -112,43 +134,36 @@ def argc_argv_screen() -> None:
 
     ✓ argv[1] is the first user argument.
 
-    ✓ argv[argc] is ALWAYS NULL.
+    ✓ argv\\[argc] is ALWAYS NULL.
     """,
-                title="Memory visualization",
-                border_style="yellow",
-            )
-        )
+            title="Memory visualization",
+            border_style="yellow",
+        ),
+    )
 
     wait()
 def fd_screen() -> None:
-    console.clear()
-    console.print(fd_panel())
+    show(fd_panel())
     wait()
 
 def write_screen() -> None:
-    console.clear()
-    console.print(write_panel())
+    show(write_panel())
     wait()
 
 def redirections_screen() -> None:
-    console.clear()
-    console.print(redirections_panel())
+    show(redirections_panel())
     wait()
 
 def common_mistakes_screen() -> None:
-    console.clear()
-    console.print(common_mistakes_panel())
+    show(common_mistakes_panel())
     wait()
 
 def memory_screen() -> None:
-    console.clear()
-    console.print(memory_panel())
+    show(memory_panel())
     wait()
 
 def goodbye_screen() -> None:
-    console.clear()
-
-    console.print(
+    show(
         Panel(
             """
     [bold bright_cyan]
@@ -179,4 +194,4 @@ def goodbye_screen() -> None:
         )
     )
 
-    wait()
+    wait("press any key to exit")

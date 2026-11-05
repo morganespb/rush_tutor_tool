@@ -1,11 +1,10 @@
 import shlex
-from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 from tutor.diagrams import argv_table
 from tutor.utils import wait
 
-console = Console()
+from tutor.utils import console
 
 
 def simulator_screen() -> None:

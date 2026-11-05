@@ -60,7 +60,7 @@ def fd_panel() -> Panel:
     Standard file descriptors.
     """
 
-    text = """
+    text = r"""
     FILE DESCRIPTORS = numbers used by the OS to access streams
 
     When a program starts, it already has 3 open doors:
