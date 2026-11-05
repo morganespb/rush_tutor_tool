@@ -1,79 +1,62 @@
-from rich.console import Console
+"""Main menu. Add a lesson by adding one line to MENU."""
+
 from rich.prompt import Prompt
-from tutor.simulator import simulator_screen
-from tutor.screens import home_screen, argc_argv_screen, memory_screen, fd_screen, write_screen, redirections_screen, common_mistakes_screen, goodbye_screen
+
+from tutor.argv_tools import argv_playground_screen, simulator_screen
 from tutor.code_cases import code_cases_screen
 from tutor.memory_simulator import memory_simulator_screen
-from tutor.argv_playground import argv_playground_screen
+from tutor.screens import (
+    argc_argv_screen,
+    common_mistakes_screen,
+    fd_screen,
+    goodbye_screen,
+    memory_screen,
+    redirections_screen,
+    write_screen,
+)
+from tutor.ui import card, console, show
+
+MENU = [
+    ("1", "📦 argc / argv", argc_argv_screen),
+    ("2", "🏠 Memory & Pointers", memory_screen),
+    ("3", "📮 File Descriptors", fd_screen),
+    ("4", "✍️  write()", write_screen),
+    ("5", "🔀 Shell Redirections", redirections_screen),
+    ("6", "⚠️  Common Mistakes", common_mistakes_screen),
+    ("7", "⚡ Live argc/argv Simulator", simulator_screen),
+    ("8", "💥 Break This Code", code_cases_screen),
+    ("9", "🧠 Pointer Playground", memory_simulator_screen),
+    ("10", "🧬 char **argv Playground", argv_playground_screen),
+]
+SCREENS = {key: screen for key, _, screen in MENU}
 
 
-console = Console()
-
-def clear() -> None:
-    console.clear()
-
-#def show_home() -> str:
-#    clear()
-#
-#    console.print(
-#        Panel(
-#            "[bold yellow]RUSH00 TUTOR TOOL[/bold yellow]\n\n"
-#            "[cyan]Outil de présentation pour expliquer :[/cyan]\n\n"
-#            "1. argc / argv\n"
-#            "2. Visualisation mémoire\n"
-#            "3. File descriptors\n"
-#            "4. write()\n"
-#            "5. Redirections\n"
-#            "6. Erreurs classiques\n"
-#            "7. Simulateur argc/argv\n"
-#            "8. Questions d'évaluation\n\n"
-#            "[dim]q. quitter[/dim]",
-#            title="42 Tutor Mode",
-#            border_style="yellow",
-#        )
-#    )
-#
-#    return Prompt.ask(
-#        "\nChoix",
-#        choices=["1", "2", "3", "4", "5", "6", "7", "8", "q"],
-#    )
-
-
-def placeholder(title: str) -> None:
-    clear()
-    console.print(
-        Panel(
-            f"[bold green]{title}[/bold green]\n\n"
-            "Cette section arrive à l'étape suivante.",
-            border_style="green",
+def home_screen() -> str:
+    entries = "\n".join(f"[bold cyan]{key:<3}[/bold cyan] {label}" for key, label, _ in MENU)
+    show(
+        card(
+            "[bold bright_cyan]🚀 42 RUSH00 TUTOR TOOL[/bold bright_cyan]\n\n"
+            "Interactive visual explanations for C basics.\n\n"
+            f"{entries}\n\n"
+            "[bold red]q[/bold red]   Quit",
+            title="42 Tutor Mode",
+            style="bright_cyan",
         )
     )
-    pause()
+    return Prompt.ask(
+        "\n[bold green]Choose a lesson[/bold green]",
+        choices=[*SCREENS, "q"],
+        show_choices=False,
+    )
+
 
 def run() -> None:
-    while True:
-        choice = home_screen()
-
-        if choice == "1":
-            argc_argv_screen()
-        elif choice == "2":
-            memory_screen()
-        elif choice == "3":
-            fd_screen()
-        elif choice == "4":
-            write_screen()
-        elif choice == "5":
-            redirections_screen()
-        elif choice == "6":
-            common_mistakes_screen()
-        elif choice == "7":
-            simulator_screen()
-        elif choice == "8":
-            code_cases_screen()
-        elif choice == "9":
-            memory_simulator_screen()
-        elif choice == "10":
-            argv_playground_screen()
-        elif choice == "q":
-            goodbye_screen()
-            break
+    try:
+        # Alternate screen: the app gets a clean full-screen canvas and the
+        # user's terminal history is restored untouched on exit.
+        with console.screen():
+            while (choice := home_screen()) != "q":
+                SCREENS[choice]()
+    except (KeyboardInterrupt, EOFError):
+        pass
+    goodbye_screen()

@@ -1,211 +1,105 @@
-from rich.console import Console
-from rich.panel import Panel
-from rich.prompt import IntPrompt
-from tutor.utils import wait
+"""Pointer Playground: a step-by-step walk from a variable to a dereferenced pointer."""
 
-console = Console()
+from rich.prompt import IntPrompt, Prompt
+
+from tutor.ui import card, show
 
 ADDRESS_A = "0x1000"
 
 
-def step1(value: int) -> None:
-    console.clear()
-    console.print(
-        Panel(
-            f"""
-🏠 STEP 1 — A variable stores a value
-
-Code:
-
-    int a = {value};
-
-Memory:
-
-        House A
-
-      +--------+
-      | {value:^6} |
-      +--------+
-
-Meaning:
-
-    a = {value}
-""",
-            title="Variable",
-            border_style="cyan",
-        )
+def box(content: str, label: str = "") -> str:
+    """ASCII box sized to its content, with an optional label on the left."""
+    width = max(len(content), 6) + 2
+    pad = " " * len(label)
+    return (
+        f"{pad}+{'-' * width}+\n"
+        f"{label}|{content:^{width}}|\n"
+        f"{pad}+{'-' * width}+"
     )
-    wait()
 
 
-def step2(value: int) -> None:
-    console.clear()
-    console.print(
-        Panel(
-            f"""
-📍 STEP 2 — A variable has an address
-
-Code:
-
-    int a = {value};
-
-Memory:
-
-        House A
-
-      +--------+
-      | {value:^6} |
-      +--------+
-
-Address:
-
-    &a = {ADDRESS_A}
-
-Meaning:
-
-    a   = {value}
-    &a  = address of a
-""",
-            title="Address",
-            border_style="green",
-        )
+def _pointer_to_value(value: int, value_label: str = "      ") -> str:
+    """p --> [0x1000] pointing down to [value]."""
+    return (
+        f"{box(ADDRESS_A, 'p --> ')}\n"
+        f"{' ' * 6}     │\n"
+        f"{' ' * 6}     ▼\n"
+        f"{box(str(value), value_label)}"
     )
-    wait()
 
 
-def step3(value: int) -> None:
-    console.clear()
-    console.print(
-        Panel(
-            f"""
-📮 STEP 3 — A pointer stores an address
-
-Code:
-
-    int a = {value};
-    int *p = &a;
-
-Memory:
-
-        p stores {ADDRESS_A}
-
-      +----------+
-p --> | {ADDRESS_A} |
-      +----------+
-           |
-           v
-        House A
-      +--------+
-      | {value:^6} |
-      +--------+
-
-Meaning:
-
-    p = {ADDRESS_A}
-
-p does NOT store {value}.
-p stores the address of a.
-""",
-            title="Pointer",
-            border_style="magenta",
-        )
-    )
-    wait()
-
-
-def step4(value: int) -> None:
-    console.clear()
-    console.print(
-        Panel(
-            f"""
-⭐ STEP 4 — Dereferencing with *
-
-Code:
-
-    *p
-
-Meaning:
-
-    Go to the address stored inside p.
-
-      +----------+
-p --> | {ADDRESS_A} |
-      +----------+
-           |
-           v
-      +--------+
-a --> | {value:^6} |
-      +--------+
-
-Result:
-
-    *p = {value}
-""",
-            title="Dereference",
-            border_style="yellow",
-        )
-    )
-    wait()
-
-
-def step5(value: int) -> None:
-    console.clear()
-    console.print(
-        Panel(
-            f"""
-🎯 STEP 5 — Why pointers matter in C
-
-Without pointer:
-
-    function(a)
-
-    The function receives a COPY of {value}.
-    The original variable is not changed.
-
-With pointer:
-
-    function(&a)
-
-    The function receives the ADDRESS of a.
-    It can go to the real variable and modify it.
-
-
-Example idea:
-
-    a = {value}
-
-    change_copy(a)
-        -> modifies only a copy
-
-    change_real(&a)
-        -> can modify the original a
-
-
-Why C needs pointers:
-
-    ✓ modify variables inside functions
-    ✓ avoid copying large data
-    ✓ work with arrays and strings
-    ✓ allocate memory with malloc
-    ✓ build linked lists and trees
-""",
-            title="Why pointers?",
-            border_style="bright_blue",
-        )
-    )
-    wait()
+def steps(value: int) -> list[tuple[str, str, str]]:
+    """(title, style, body) for each step of the lesson."""
+    v = str(value)
+    return [
+        (
+            "Variable",
+            "cyan",
+            f"🏠 [bold]STEP 1 — A variable stores a value[/bold]\n\n"
+            f"Code:\n\n    int a = {v};\n\n"
+            f"Memory:\n\n      House A\n{box(v, '      ')}\n\n"
+            f"Meaning:\n\n    a = {v}",
+        ),
+        (
+            "Address",
+            "green",
+            f"📍 [bold]STEP 2 — A variable has an address[/bold]\n\n"
+            f"Code:\n\n    int a = {v};\n\n"
+            f"Memory:\n\n      House A  (address {ADDRESS_A})\n{box(v, '      ')}\n\n"
+            f"Meaning:\n\n    a   = {v}\n    &a  = {ADDRESS_A}  (address of a)",
+        ),
+        (
+            "Pointer",
+            "magenta",
+            f"📮 [bold]STEP 3 — A pointer stores an address[/bold]\n\n"
+            f"Code:\n\n    int a = {v};\n    int *p = &a;\n\n"
+            f"Memory:\n\n{_pointer_to_value(value)}\n\n"
+            f"Meaning:\n\n    p = {ADDRESS_A}\n\n"
+            f"p does NOT store {v}. p stores the address of a.",
+        ),
+        (
+            "Dereference",
+            "yellow",
+            f"⭐ [bold]STEP 4 — Dereferencing with *[/bold]\n\n"
+            f"Code:\n\n    *p\n\n"
+            f"Meaning: go to the address stored inside p.\n\n"
+            f"{_pointer_to_value(value, 'a --> ')}\n\n"
+            f"Result:\n\n    *p = {v}",
+        ),
+        (
+            "Why pointers?",
+            "bright_blue",
+            f"🎯 [bold]STEP 5 — Why pointers matter in C[/bold]\n\n"
+            f"Without pointer:   function(a)\n"
+            f"    The function receives a COPY of {v}. The original is not changed.\n\n"
+            f"With pointer:      function(&a)\n"
+            f"    The function receives the ADDRESS of a and can modify the real variable.\n\n"
+            f"Why C needs pointers:\n\n"
+            f"    ✓ modify variables inside functions\n"
+            f"    ✓ avoid copying large data\n"
+            f"    ✓ work with arrays and strings\n"
+            f"    ✓ allocate memory with malloc\n"
+            f"    ✓ build linked lists and trees",
+        ),
+    ]
 
 
 def memory_simulator_screen() -> None:
-    console.clear()
+    show(card("Pick a value and follow it through memory, one step at a time.", title="Pointer Playground"))
+    value = IntPrompt.ask("Choose a value for variable a", default=42)
 
-    value = IntPrompt.ask(
-        "Choose a value for variable a",
-        default=42,
-    )
+    lesson = steps(value)
+    index = 0
+    while True:
+        title, style, body = lesson[index]
+        show(card(body, title=f"{title} ({index + 1}/{len(lesson)})", style=style))
 
-    step1(value)
-    step2(value)
-    step3(value)
-    step4(value)
-    step5(value)
+        last = index == len(lesson) - 1
+        choice = Prompt.ask(
+            "\n\\[n] next  \\[b] back  \\[q] menu",
+            choices=["n", "b", "q"],
+            default="q" if last else "n",
+        )
+        if choice == "q" or (choice == "n" and last):
+            return
+        index = max(index - 1, 0) if choice == "b" else index + 1

@@ -1,10 +1,9 @@
-from rich.console import Console
-from rich.panel import Panel
+"""'Break This Code': short C snippets with a hidden explanation of what goes wrong."""
+
 from rich.prompt import Prompt
 from rich.syntax import Syntax
-from tutor.utils import wait
 
-console = Console()
+from tutor.ui import card, show
 
 CASES = [
     {
@@ -37,7 +36,7 @@ int main(void)
 """,
         "run": "./rush",
         "problem": (
-            "The string \"Hello\" has 5 visible characters plus the null byte.\n"
+            'The string "Hello" has 5 visible characters plus the null byte.\n'
             "write() does not stop at '\\0'. It writes exactly 10 bytes.\n"
             "So it may print garbage after Hello."
         ),
@@ -52,7 +51,7 @@ void print(char *str)
     write(1, str, sizeof(str));
 }
 """,
-        "run": "print(\"Hello\")",
+        "run": 'print("Hello")',
         "problem": (
             "sizeof(str) gives the size of the pointer, not the length of the string.\n"
             "On a 64-bit machine, it is usually 8."
@@ -60,61 +59,40 @@ void print(char *str)
     },
 ]
 
+
+def _frame(index: int, show_solution: bool) -> list:
+    case = CASES[index]
+    frame = [
+        card(
+            f"[bold yellow]{case['title']}[/bold yellow]\n\n[cyan]Run:[/cyan] {case['run']}",
+            title=f"Break This Code {index + 1}/{len(CASES)}",
+            style="yellow",
+        ),
+        Syntax(case["code"].strip(), "c", theme="monokai", line_numbers=True, padding=1),
+    ]
+    if show_solution:
+        frame.append(card(case["problem"], title="What breaks?", style="red"))
+    else:
+        frame.append(
+            card("What happens? Why? How would you fix it?", title="Ask the student first", style="cyan")
+        )
+    return frame
+
+
 def code_cases_screen() -> None:
-    index = 0
-    show_solution = False
+    index, show_solution = 0, False
 
     while True:
-        case = CASES[index]
-        console.clear()
-
-        console.print(
-            Panel(
-                f"[bold yellow]{case['title']}[/bold yellow]\n\n"
-                f"[cyan]Run:[/cyan] {case['run']}",
-                title=f"Break This Code {index + 1}/{len(CASES)}",
-                border_style="yellow",
-            )
-        )
-
-        syntax = Syntax(case["code"].strip(), "c", theme="monokai", line_numbers=True)
-        console.print(syntax)
-
-        if show_solution:
-            console.print(
-                Panel(
-                    case["problem"],
-                    title="What breaks?",
-                    border_style="red",
-                )
-            )
-        #else:
-        #    console.print(
-        #        Panel(
-        #            "[bold cyan]Ask the student first:[/bold cyan]\n\n"
-        #            "What happens?\n"
-        #            "Why?\n"
-        #            "How would you fix it?",
-        #            title="Think first",
-        #            border_style="cyan",
-        #        )
-        #    )
-
+        show(*_frame(index, show_solution))
         choice = Prompt.ask(
-            "\n[s] show solution  [n] next  [b] back  [q] menu",
+            "\n\\[s] show solution  \\[n] next  \\[b] back  \\[q] menu",
             choices=["s", "n", "b", "q"],
-            default="s",
+            default="n" if show_solution else "s",
         )
-
+        if choice == "q":
+            return
         if choice == "s":
             show_solution = True
-        elif choice == "n":
-            index = (index + 1) % len(CASES)
-            show_solution = False
-        elif choice == "b":
-            index = (index - 1) % len(CASES)
-            show_solution = False
-        elif choice == "q":
-            break
-
-    wait()
+        else:
+            step = 1 if choice == "n" else -1
+            index, show_solution = (index + step) % len(CASES), False
